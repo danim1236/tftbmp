@@ -3,6 +3,7 @@
 #define LCD_CD A2    
 #define LCD_WR A1    
 #define LCD_RD A0   
+#define LCD_RESET A4
 
 //Duemilanove/Diecimila/UNO/etc ('168 and '328 chips) microcontoller:
 
@@ -16,7 +17,6 @@
 #include "TFTLCD.h"
 
 // our TFT wiring
-#define LCD_RESET A4
 TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 // the file itself
