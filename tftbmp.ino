@@ -22,7 +22,6 @@ TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, 0);
 File bmpFile;
 
 // information we extract about the bitmap file
-int bmpWidth, bmpHeight;
 uint8_t bmpDepth, bmpImageoffset;
 
 
@@ -68,6 +67,9 @@ void loop()
 #define BUFFPIXEL 20
 
 void bmpdraw(File f) {
+  int bmpWidth= 240;
+  int bmpHeight = 320;
+
   bmpFile.seek(bmpImageoffset);
   
   uint32_t time = millis();
@@ -81,7 +83,7 @@ void bmpdraw(File f) {
   for (i=0; i< bmpHeight; i++) {
     // bitmaps are stored with the BOTTOM line first so we have to move 'up'
 
-    tft.goTo(bmpWidth, y+i); 
+    tft.goTo(0, i); 
     
     for (j=0; j<bmpWidth; j++) {
       // read more pixels
@@ -130,8 +132,8 @@ boolean bmpReadHeader(File f) {
   
   // read DIB header
   tmp = read32(f);
-  bmpWidth = read32(f);
-  bmpHeight = read32(f);
+  read32(f);
+  read32(f);
 
   
   if (read16(f) != 1)
