@@ -57,11 +57,9 @@ void setup()
 
 void loop()
 {
-  tft.setRotation(0);
   tft.fillScreen(0);
-  bmpdraw(bmpFile, 0, 0);
+  bmpdraw(bmpFile);
   delay(1000);
-
 }
 
 
@@ -69,7 +67,7 @@ void loop()
 
 #define BUFFPIXEL 20
 
-void bmpdraw(File f, int x, int y) {
+void bmpdraw(File f) {
   bmpFile.seek(bmpImageoffset);
   
   uint32_t time = millis();
@@ -83,15 +81,7 @@ void bmpdraw(File f, int x, int y) {
   for (i=0; i< bmpHeight; i++) {
     // bitmaps are stored with the BOTTOM line first so we have to move 'up'
 
-    if (tft.getRotation() == 3) {
-      tft.goTo(x, y+bmpHeight-i); 
-    } else if  (tft.getRotation() == 2) {
-      tft.goTo(x+i, y);
-    } else if  (tft.getRotation() == 1) {
-        tft.goTo(x+bmpWidth-i, y+bmpHeight); 
-    } else if  (tft.getRotation() == 0) {
-      tft.goTo(x+bmpWidth, y+i); 
-    }
+    tft.goTo(bmpWidth, y+i); 
     
     for (j=0; j<bmpWidth; j++) {
       // read more pixels
