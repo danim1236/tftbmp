@@ -15,12 +15,46 @@
 // There are examples in the sketch folder
 
 #include "TFTLCD.h"
+#include "TouchScreen.h"
+
+// Color definitions
+#define	BLACK           0x0000
+#define	BLUE            0x001F
+#define	RED             0xF800
+#define	GREEN           0x07E0
+#define CYAN            0x07FF
+#define MAGENTA         0xF81F
+#define YELLOW          0xFFE0 
+#define WHITE           0xFFFF
 
 // our TFT wiring
 TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
+#define YP A1  // must be an analog pin, use "An" notation!
+#define XM A2  // must be an analog pin, use "An" notation!
+#define YM  7 // can be a digital pin
+#define XP  6  // can be a digital pin
+
+#define TS_MINX 150
+#define TS_MINY 120
+#define TS_MAXX 920
+#define TS_MAXY 940
+
+#define MINPRESSURE 10
+#define MAXPRESSURE 1000
+
+// For better pressure precision, we need to know the resistance
+// between X+ and X- Use any multimeter to read it
+// For the one we're using, its 300 ohms across the X plate
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
 // the file itself
 File bmpFile;
+
+#define BOXSIZE 40
+#define PENRADIUS 3
+int oldcolor, currentcolor;
+
 
 void setup()
 {
@@ -46,6 +80,13 @@ void setup()
     while (1);
   }
   bmpdraw(bmpFile);
+  
+  tft.fillRect(0, 320-BOXSIZE, BOXSIZE, 320,MAGENTA );
+  tft.fillRect(BOXSIZE, 320-BOXSIZE, BOXSIZE, 320,BLUE );
+  tft.fillRect(BOXSIZE*2, 320-BOXSIZE, BOXSIZE, 320,CYAN );
+  tft.fillRect(BOXSIZE*3, 320-BOXSIZE, BOXSIZE, 320, GREEN);
+  tft.fillRect(BOXSIZE*4, 320-BOXSIZE, BOXSIZE, 320, YELLOW);
+  tft.fillRect(BOXSIZE*5, 320-BOXSIZE, BOXSIZE, 320, RED);
 }
 
 void loop()
