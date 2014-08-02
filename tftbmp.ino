@@ -16,14 +16,11 @@
 #include "TFTLCD.h"
 
 // our TFT wiring
-TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, 0);
+#define LCD_RESET A4
+TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 // the file itself
 File bmpFile;
-
-// information we extract about the bitmap file
-uint8_t bmpDepth, bmpImageoffset;
-
 
 void setup()
 {
@@ -48,10 +45,6 @@ void setup()
   if (! bmpFile) {
     while (1);
   }
-  
-  if (! bmpReadHeader(bmpFile)) { 
-     return;
-  }
 }
 
 void loop()
@@ -69,7 +62,10 @@ void loop()
 void bmpdraw(File f) {
   int bmpWidth= 240;
   int bmpHeight = 320;
+  uint8_t bmpImageoffset;
 
+  bmpFile.seek(2 + 4 + 4);
+  bmpImageoffset = read32(f);  
   bmpFile.seek(bmpImageoffset);
   
   uint32_t time = millis();
@@ -80,11 +76,11 @@ void bmpdraw(File f) {
   uint8_t sdbuffer[3 * BUFFPIXEL];  // 3 * pixels to buffer
   uint8_t buffidx = 3*BUFFPIXEL;
   
+  tft.goTo(0, 0); 
+    
   for (i=0; i< bmpHeight; i++) {
     // bitmaps are stored with the BOTTOM line first so we have to move 'up'
 
-    tft.goTo(0, i); 
-    
     for (j=0; j<bmpWidth; j++) {
       // read more pixels
       if (buffidx >= 3*BUFFPIXEL) {
@@ -113,42 +109,6 @@ void bmpdraw(File f) {
   }
 }
 
-boolean bmpReadHeader(File f) {
-   // read header
-  uint32_t tmp;
-  
-  if (read16(f) != 0x4D42) {
-    // magic bytes missing
-    return false;
-  }
- 
-  // read file size
-  tmp = read32(f);  
-  
-  // read and ignore creator bytes
-  read32(f);
-  
-  bmpImageoffset = read32(f);  
-  
-  // read DIB header
-  tmp = read32(f);
-  read32(f);
-  read32(f);
-
-  
-  if (read16(f) != 1)
-    return false;
-    
-  bmpDepth = read16(f);
-
-  if (read32(f) != 0) {
-    // compression not supported!
-    return false;
-  }
-  
-  return true;
-}
-
 /*********************************************/
 
 // These read data from the SD card file and convert them to big endian 
@@ -156,26 +116,12 @@ boolean bmpReadHeader(File f) {
 
 // LITTLE ENDIAN!
 uint16_t read16(File f) {
-  uint16_t d;
-  uint8_t b;
-  b = f.read();
-  d = f.read();
-  d <<= 8;
-  d |= b;
-  return d;
+  return f.read() | ((uint16_t)f.read()) << 8;
 }
-
 
 // LITTLE ENDIAN!
 uint32_t read32(File f) {
-  uint32_t d;
-  uint16_t b;
- 
-  b = read16(f);
-  d = read16(f);
-  d <<= 16;
-  d |= b;
-  return d;
+  return read16(f) | ((uint32_t)read16(f)) << 16;
 }
 
 
