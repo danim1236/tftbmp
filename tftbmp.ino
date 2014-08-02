@@ -45,12 +45,11 @@ void setup()
   if (! bmpFile) {
     while (1);
   }
+  bmpdraw(bmpFile);
 }
 
 void loop()
 {
-  tft.fillScreen(0);
-  bmpdraw(bmpFile);
   delay(1000);
 }
 
@@ -58,13 +57,13 @@ void loop()
 /*********************************************/
 
 #define BUFFPIXEL 20
+#define BMP_WIDTH  240
+#define BMP_HEIGHT 320
 
 void bmpdraw(File f) {
-  int bmpWidth= 240;
-  int bmpHeight = 320;
   uint8_t bmpImageoffset;
 
-  bmpFile.seek(2 + 4 + 4);
+  bmpFile.seek(10);
   bmpImageoffset = read32(f);  
   bmpFile.seek(bmpImageoffset);
   
@@ -78,10 +77,10 @@ void bmpdraw(File f) {
   
   tft.goTo(0, 0); 
     
-  for (i=0; i< bmpHeight; i++) {
+  for (i=0; i< BMP_HEIGHT; i++) {
     // bitmaps are stored with the BOTTOM line first so we have to move 'up'
 
-    for (j=0; j<bmpWidth; j++) {
+    for (j=0; j<BMP_WIDTH; j++) {
       // read more pixels
       if (buffidx >= 3*BUFFPIXEL) {
         bmpFile.read(sdbuffer, 3*BUFFPIXEL);
