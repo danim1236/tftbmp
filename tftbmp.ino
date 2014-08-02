@@ -28,77 +28,38 @@ uint8_t bmpDepth, bmpImageoffset;
 
 void setup()
 {
-  Serial.begin(9600);
- 
   tft.reset();
   
   // find the TFT display
   uint16_t identifier = tft.readRegister(0x0);
-  if (identifier == 0x9325) {
-    Serial.println("Found ILI9325");
-  } else if (identifier == 0x9328) {
-    Serial.println("Found ILI9328");
-  } else {
-    Serial.print("Unknown driver chip ");
-    Serial.println(identifier, HEX);
+  if (identifier != 0x9325 && identifier != 0x9328) {
     while (1);
   }  
  
   tft.initDisplay();
   
-  Serial.print("Initializing SD card...");
   pinMode(10, OUTPUT);
 
   if (!SD.begin(10)) {
-    Serial.println("failed!");
     return;
   }
-  Serial.println("SD OK!");
 
-  bmpFile = SD.open("woof.bmp");
+  bmpFile = SD.open("woof2.bmp");
 
   if (! bmpFile) {
-    Serial.println("didnt find image");
     while (1);
   }
   
   if (! bmpReadHeader(bmpFile)) { 
-     Serial.println("bad bmp");
      return;
   }
-  
-  Serial.print("image size "); 
-  Serial.print(bmpWidth, DEC);
-  Serial.print(", ");
-  Serial.println(bmpHeight, DEC);
- 
-  bmpdraw(bmpFile, 0, 0);
-  delay(1000);
-  
-  bmpFile.close();
-  bmpFile = SD.open("miniwoof.bmp");
-
-  if (! bmpFile) {
-    Serial.println("didnt find image");
-    while (1);
-  }
-  
-  if (! bmpReadHeader(bmpFile)) { 
-     Serial.println("bad bmp");
-     return;
-  }
-  
-  Serial.print("image size "); 
-  Serial.print(bmpWidth, DEC);
-  Serial.print(", ");
-  Serial.println(bmpHeight, DEC);
 }
 
 void loop()
 {
   tft.setRotation(0);
   tft.fillScreen(0);
-  bmpdraw(bmpFile, -60, 80);
+  bmpdraw(bmpFile, 0, 0);
   delay(1000);
 
 }
@@ -118,8 +79,6 @@ void bmpdraw(File f, int x, int y) {
   
   uint8_t sdbuffer[3 * BUFFPIXEL];  // 3 * pixels to buffer
   uint8_t buffidx = 3*BUFFPIXEL;
-  
-  Serial.print("rotation = "); Serial.println(tft.getRotation(), DEC);
   
   for (i=0; i< bmpHeight; i++) {
     // bitmaps are stored with the BOTTOM line first so we have to move 'up'
@@ -160,8 +119,6 @@ void bmpdraw(File f, int x, int y) {
       tft.writeData(p);
     }
   }
-  Serial.print(millis() - time, DEC);
-  Serial.println(" ms");
 }
 
 boolean bmpReadHeader(File f) {
@@ -175,17 +132,14 @@ boolean bmpReadHeader(File f) {
  
   // read file size
   tmp = read32(f);  
-  Serial.print("size 0x"); Serial.println(tmp, HEX);
   
   // read and ignore creator bytes
   read32(f);
   
   bmpImageoffset = read32(f);  
-  Serial.print("offset "); Serial.println(bmpImageoffset, DEC);
   
   // read DIB header
   tmp = read32(f);
-  Serial.print("header size "); Serial.println(tmp, DEC);
   bmpWidth = read32(f);
   bmpHeight = read32(f);
 
@@ -194,15 +148,12 @@ boolean bmpReadHeader(File f) {
     return false;
     
   bmpDepth = read16(f);
-  Serial.print("bitdepth "); Serial.println(bmpDepth, DEC);
 
   if (read32(f) != 0) {
     // compression not supported!
     return false;
   }
   
-  Serial.print("compression "); Serial.println(tmp, DEC);
-
   return true;
 }
 
